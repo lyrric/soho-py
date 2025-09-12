@@ -44,7 +44,6 @@ def delete_task(request, task_id):
        删除指定ID的任务
        """
     global tasks
-
     task_index = find_task_index_by_id(task_id)
     if task_index is not None:
         tasks.pop(task_index)
@@ -68,4 +67,5 @@ def find_task_index_by_id(task_id) -> Optional[int]:
 
 
 def get_tasks(request):
-    return JsonResponse(HttpResult.ok(tasks).to_dict(), content_type="application/json", safe=False)
+    tasks_data = [task.to_dict() for task in tasks]
+    return JsonResponse(HttpResult.ok(tasks_data).to_dict(), content_type="application/json", safe=False)

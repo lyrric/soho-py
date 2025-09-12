@@ -3,77 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>soho搜货</title>
+    <title>SOHO 搜货</title>
     <script src="./js/vue.min.js"></script>
     <script src="https://unpkg.com/element-ui@2.15.14/lib/index.js"></script>
-    <link
-            rel="stylesheet"
-            href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css"
-    />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 
-    <style>-
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #f5f7fa;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #f5f7fa;
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
 
-    .container {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 20px;
-    }
+        .container {
+          max-width: 1000px;
+          margin: 40px auto;
+          padding: 20px;
+        }
 
-    .app-title {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #1890ff;
-      font-weight: 600;
-    }
+        .app-title {
+          text-align: center;
+          margin-bottom: 30px;
+          color: #1890ff;
+          font-weight: 600;
+        }
 
-    .form-container {
-      background-color: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-      margin-bottom: 30px;
-    }
+        .form-container {
+          background-color: white;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+          margin-bottom: 30px;
+        }
 
-    .table-container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    }
+        .table-container {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        }
 
-    .el-form-item {
-      margin-bottom: 20px;
-    }
+        .el-form-item {
+          margin-bottom: 20px;
+        }
 
-    .btn-submit {
-      width: 100%;
-    }
+        .btn-submit {
+          width: 100%;
+        }
 
-    .operation-buttons {
-      display: flex;
-      gap: 5px;
-    }
+        .operation-buttons {
+          display: flex;
+          gap: 5px;
+        }
 
-    /* 动画效果 */
-    .fade-enter-active, .fade-leave-active {
-      transition: opacity .5s;
-    }
-    .fade-enter, .fade-leave-to {
-      opacity: 0;
-    }
+        /* 动画效果 */
+        .fade-enter-active, .fade-leave-active {
+          transition: opacity .5s;
+        }
+        .fade-enter, .fade-leave-to {
+          opacity: 0;
+        }
     </style>
 </head>
 <body>
 <div id="app" class="container">
     <h1 class="app-title">
-        <i class="fa fa-clock-o" aria-hidden="true"></i> 产品时间管理系统
+        <i class="fa fa-clock-o" aria-hidden="true"></i> SOHO 搜货
     </h1>
 
     <!-- 表单区域 -->
@@ -118,7 +115,7 @@
                 stripe
                 style="width: 100%"
                 :loading="tableLoading">
-            <el-table-column prop="id" label="ID" width="80" align="center"></el-table-column>
+            <el-table-column prop="task_id" label="TASK_ID" width="80" align="center"></el-table-column>
             <el-table-column prop="product_id" label="Product ID" align="center"></el-table-column>
             <el-table-column prop="token_id" label="Token ID" align="center"></el-table-column>
             <el-table-column
@@ -139,7 +136,7 @@
                         <el-button
                                 size="mini"
                                 type="danger"
-                                @click="handleDelete(scope.row.id)">
+                                @click="handleDelete(scope.row.task_id)">
                             <i class="fa fa-trash" aria-hidden="true"></i> 删除
                         </el-button>
                     </div>
@@ -194,7 +191,7 @@
           },
           // 编辑表单数据
           editForm: {
-            id: '',
+            task_id: '',
             product_id: '',
             token_id: '',
             start_time: ''
@@ -229,43 +226,73 @@
       },
       methods: {
         // 获取表格数据
-        fetchData() {
+        async fetchData() {
           this.tableLoading = true;
-          // 模拟API请求
-          setTimeout(() => {
-            // 实际项目中替换为真实API调用
-            this.tableData = [
-              { id: 1, product_id: 'PROD001', token_id: 'TOKEN001', start_time: 8 },
-              { id: 2, product_id: 'PROD002', token_id: 'TOKEN002', start_time: 12 },
-              { id: 3, product_id: 'PROD003', token_id: 'TOKEN003', start_time: 18 }
-            ];
+          try {
+            const response = await fetch('/soho/tasks/getList', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+              // 将后端返回的task_id映射为前端的id字段
+              this.tableData = (result.data || []).map(item => ({
+                task_id: item.task_id,
+                product_id: item.product_id,
+                token_id: item.token_id,
+                start_time: item.start_time
+              }));
+            } else {
+              this.$message.error('获取数据失败: ' + result.msg);
+            }
+          } catch (error) {
+            console.error('获取数据失败:', error);
+            this.$message.error('获取数据失败，请检查网络连接');
+          } finally {
             this.tableLoading = false;
-          }, 500);
+          }
         },
 
         // 提交表单（新增）
-        submitForm() {
-          this.$refs.form.validate((valid) => {
-            if (valid) {
-              this.loading = true;
-              // 模拟API请求
-              setTimeout(() => {
-                // 实际项目中替换为真实API调用
-                console.log('新增数据:', this.form);
-
-                // 显示成功消息
+        async submitForm() {
+          const valid = await this.$refs.form.validate().catch(() => false);
+          if (valid) {
+            this.loading = true;
+            try {
+              const response = await fetch('/soho/tasks/create', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                  token_id: this.form.token_id,
+                  product_id: this.form.product_id,
+                  start_time: this.form.start_time
+                })
+              });
+              const result = await response.json();
+              if (result.code === 200) {
                 this.$message({
                   message: '新增成功',
                   type: 'success'
                 });
-
-                // 刷新页面
-                window.location.reload();
-
-                this.loading = false;
-              }, 1000);
+                // 重置表单
+                this.$refs.form.resetFields();
+                // 刷新数据
+                this.fetchData();
+              } else {
+                this.$message.error('新增失败: ' + result.msg);
+              }
+            } catch (error) {
+              console.error('新增失败:', error);
+              this.$message.error('新增失败，请检查网络连接');
+            } finally {
+              this.loading = false;
             }
-          });
+          }
         },
 
         // 处理编辑
@@ -276,58 +303,92 @@
         },
 
         // 提交编辑表单
-        submitEditForm() {
-          this.$refs.editForm.validate((valid) => {
-            if (valid) {
-              this.editLoading = true;
-              // 模拟API请求
-              setTimeout(() => {
-                // 实际项目中替换为真实API调用
-                console.log('修改数据:', this.editForm);
-
-                // 显示成功消息
+        async submitEditForm() {
+          const valid = await this.$refs.editForm.validate().catch(() => false);
+          if (valid) {
+            this.editLoading = true;
+            try {
+              const response = await fetch(`/soho/tasks/${this.editForm.task_id}/update`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                  token_id: this.editForm.token_id,
+                  product_id: this.editForm.product_id,
+                  start_time: this.editForm.start_time
+                })
+              });
+              const result = await response.json();
+              if (result.code === 200) {
                 this.$message({
                   message: '修改成功',
                   type: 'success'
                 });
-
                 // 关闭对话框并刷新数据
                 this.dialogVisible = false;
                 this.fetchData();
-
-                this.editLoading = false;
-              }, 1000);
+              } else {
+                this.$message.error('修改失败: ' + result.msg);
+              }
+            } catch (error) {
+              console.error('修改失败:', error);
+              this.$message.error('修改失败，请检查网络连接');
+            } finally {
+              this.editLoading = false;
             }
-          });
+          }
         },
 
         // 处理删除
-        handleDelete(id) {
+        handleDelete(task_id) {
           this.$confirm('确定要删除这条记录吗?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
-          }).then(() => {
-            // 模拟API请求
-            setTimeout(() => {
-              // 实际项目中替换为真实API调用
-              console.log('删除ID:', id);
-
-              // 显示成功消息
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
+          }).then(async () => {
+            try {
+              const response = await fetch(`/soho/tasks/${task_id}/delete`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': this.getCsrfToken()
+                }
               });
-
-              // 刷新数据
-              this.fetchData();
-            }, 500);
+              const result = await response.json();
+              if (result.code === 200) {
+                this.$message({
+                  type: 'success',
+                  message: '删除成功!'
+                });
+                // 刷新数据
+                this.fetchData();
+              } else {
+                this.$message.error('删除失败: ' + result.msg);
+              }
+            } catch (error) {
+              console.error('删除失败:', error);
+              this.$message.error('删除失败，请检查网络连接');
+            }
           }).catch(() => {
             this.$message({
               type: 'info',
               message: '已取消删除'
             });
           });
+        },
+
+        // 获取CSRF Token
+        getCsrfToken() {
+          const cookies = document.cookie.split(';');
+          for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+              return value;
+            }
+          }
+          return '';
         }
       }
     });
