@@ -76,12 +76,12 @@
     <!-- 表单区域 -->
     <div class="form-container">
         <el-form ref="form" :model="form" :rules="rules" label-width="120px" size="medium">
-            <el-form-item label="Product ID" prop="product_id">
-                <el-input v-model="form.product_id" placeholder="请输入Product ID"></el-input>
-            </el-form-item>
-
             <el-form-item label="Token ID" prop="token_id">
                 <el-input v-model="form.token_id" placeholder="请输入Token ID"></el-input>
+            </el-form-item>
+
+            <el-form-item label="Product ID" prop="product_id">
+                <el-input v-model="form.product_id" placeholder="请输入Product ID"></el-input>
             </el-form-item>
 
             <el-form-item label="开始时间" prop="start_time">
@@ -116,8 +116,8 @@
                 style="width: 100%"
                 :loading="tableLoading">
             <el-table-column prop="task_id" label="TASK_ID" width="80" align="center"></el-table-column>
-            <el-table-column prop="product_id" label="Product ID" align="center"></el-table-column>
             <el-table-column prop="token_id" label="Token ID" align="center"></el-table-column>
+            <el-table-column prop="product_id" label="Product ID" align="center"></el-table-column>
             <el-table-column
                     prop="start_time"
                     label="开始时间"
@@ -161,13 +161,14 @@
             width="500px"
             :close-on-click-modal="false">
         <el-form ref="editForm" :model="editForm" :rules="rules" label-width="120px" size="medium">
+            <el-form-item label="Token ID" prop="token_id">
+                <el-input v-model="editForm.token_id" placeholder="请输入Token ID"></el-input>
+            </el-form-item>
+            
             <el-form-item label="Product ID" prop="product_id">
                 <el-input v-model="editForm.product_id" placeholder="请输入Product ID"></el-input>
             </el-form-item>
 
-            <el-form-item label="Token ID" prop="token_id">
-                <el-input v-model="editForm.token_id" placeholder="请输入Token ID"></el-input>
-            </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取消</el-button>

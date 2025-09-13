@@ -1,3 +1,8 @@
-from django.test import TestCase
+import asyncio
 
-# Create your tests here.
+
+async def test_task():
+    pass
+
+
+asyncio.run(test_task())

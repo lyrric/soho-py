@@ -1,4 +1,5 @@
 import json
+import os
 
 import aiohttp
 
@@ -6,8 +7,15 @@ from soho import logging_config
 
 log = logging_config.get_logger(__name__)
 
+spt = ''
 
-async def send_message(spt, content, summary):
+if not os.environ.get('SPT'):
+    raise Exception('请配置环境变量SPT！')
+else:
+    spt = os.environ.get('SPT')
+
+
+async def send_message(content, summary):
     """
     异步发送消息
 
