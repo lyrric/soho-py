@@ -7,22 +7,18 @@ from soho import logging_config
 
 log = logging_config.get_logger(__name__)
 
-spt = ''
+spt = None
 
 if not os.environ.get('SPT'):
-    raise Exception('请配置环境变量SPT！')
+    log.warn("未配置SPT，不发送消息")
 else:
     spt = os.environ.get('SPT')
 
 
 async def send_message(content, summary):
-    """
-    异步发送消息
-
-    :param spt: 接收者标识
-    :param content: 消息内容
-    :param summary: 消息摘要
-    """
+    if spt is None:
+        log.warn("未配置SPT，不发送消息")
+        return
     body_map = {
         "content": content,
         "summary": summary,
