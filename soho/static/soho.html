@@ -124,6 +124,15 @@
                     align="center">
                 <template slot-scope="scope">{{ scope.row.start_time }}:00</template>
             </el-table-column>
+            <el-table-column
+                    prop="status"
+                    label="状态"
+                    align="center"
+                    width="120">
+                <template slot-scope="scope">
+                    <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
+                </template>
+            </el-table-column>
             <el-table-column label="操作" align="center" width="200">
                 <template slot-scope="scope">
                     <div class="operation-buttons">
@@ -158,17 +167,6 @@
 
             <el-form-item label="Token ID" prop="token_id">
                 <el-input v-model="editForm.token_id" placeholder="请输入Token ID"></el-input>
-            </el-form-item>
-
-            <el-form-item label="开始时间" prop="start_time">
-                <el-select v-model="editForm.start_time" placeholder="请选择开始时间（小时）">
-                    <el-option
-                            v-for="hour in hours"
-                            :key="hour"
-                            :label="hour + ':00'"
-                            :value="hour">
-                    </el-option>
-                </el-select>
             </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -237,12 +235,12 @@
             });
             const result = await response.json();
             if (result.code === 200) {
-              // 将后端返回的task_id映射为前端的id字段
               this.tableData = (result.data || []).map(item => ({
                 task_id: item.task_id,
                 product_id: item.product_id,
                 token_id: item.token_id,
-                start_time: item.start_time
+                start_time: item.start_time,
+                status: item.status
               }));
             } else {
               this.$message.error('获取数据失败: ' + result.msg);
@@ -317,7 +315,6 @@
                 body: JSON.stringify({
                   token_id: this.editForm.token_id,
                   product_id: this.editForm.product_id,
-                  start_time: this.editForm.start_time
                 })
               });
               const result = await response.json();
@@ -389,6 +386,28 @@
             }
           }
           return '';
+        },
+
+        // 获取状态文字
+        getStatusText(status) {
+          const statusMap = {
+            '-1': '已取消',
+            '0': '初始状态',
+            '1': '成功',
+            '2': '失败'
+          };
+          return statusMap[status] || '未知状态';
+        },
+
+        // 获取状态标签类型
+        getStatusType(status) {
+          const typeMap = {
+            '-1': 'info',     // 已取消 - 灰色
+            '0': 'warning',   // 初始状态 - 橙色
+            '1': 'success',   // 成功 - 绿色
+            '2': 'danger'     // 失败 - 红色
+          };
+          return typeMap[status] || 'info';
         }
       }
     });

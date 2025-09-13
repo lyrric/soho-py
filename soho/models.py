@@ -1,25 +1,24 @@
 from django import forms
-from django.db import models
 
 
 # Create your models here.
 
-class TaskForm(forms.Form):
-    pass
-    # def __init__(self, task_id, token_id, product_id, start_time):
-    #     super().__init__()
-    #     self.task_id = task_id
-    #     self.token_id = token_id
-    #     self.product_id = product_id
-    #     self.start_time = start_time
-
 
 class Task:
-    def __init__(self, task_id, token_id, product_id, start_time):
+    def __init__(self, task_id, token_id, product_id, start_time, status=0):
         self.task_id = task_id
         self.token_id = token_id
         self.product_id = product_id
         self.start_time = start_time
+        # 状态 -1:已取消 0:初始状态 1：成功 2：失败
+        self.status = 0
+
+    def __str__(self):
+        return "task_id: {}, token_id: {}, product_id: {}, start_time: {}, status: {}".format(self.task_id,
+                                                                                              self.token_id,
+                                                                                              self.product_id,
+                                                                                              self.start_time,
+                                                                                              self.status)
 
     @classmethod
     def from_dict(cls, _dict):
@@ -30,7 +29,8 @@ class Task:
             "task_id": self.task_id,
             "token_id": self.token_id,
             "product_id": self.product_id,
-            "start_time": self.start_time
+            "start_time": self.start_time,
+            "status": self.status,
         }
 
 
