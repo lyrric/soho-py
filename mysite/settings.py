@@ -27,9 +27,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 # 静态页面配置
 STATICFILES_DIRS = [
-    BASE_DIR / "soho/static",  # 项目根目录下的static文件夹
+    BASE_DIR / "static",  # 项目根目录下的static文件夹
 ]
-
+STATIC_URL = '/static/'
 # Application definition
 
 INSTALLED_APPS = [
