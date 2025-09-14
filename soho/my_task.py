@@ -16,16 +16,16 @@ tasks: List[Task] = []
 
 async def _do_task(task: Task):
     log.info(f"准备执行任务, task_id:{task.task_id}")
-    # start_time = _get_start_time(task)
-    start_time = datetime.datetime.now()
+    start_time = _get_start_time(task)
+    # start_time = datetime.datetime.now()
     now = datetime.datetime.now()
     if now < start_time:
         sleep_time = start_time - now
         log.info(f"task_id:{task.task_id} 任务未开始，等待{sleep_time.seconds}秒")
         await asyncio.sleep(sleep_time.seconds)
     log.info(f"开始执行任务：{task}")
-    # end_time = _get_end_time(task)
-    end_time = start_time + datetime.timedelta(minutes=5)
+    end_time = _get_end_time(task)
+    # end_time = start_time + datetime.timedelta(minutes=5)
 
     while datetime.datetime.now() < end_time:
         result = await send_post(task.token_id, task.product_id)
@@ -60,7 +60,7 @@ def start_task(task: Task):
 
 async def _start_task(task: Task):
     result = await _do_task(task)
-    log.info(f"task_id: {task.task_id} 任务执行{'成功' if result else '失败'}：{task.task_id}")
+    log.info(f"task_id: {task.task_id} 任务执行{'成功' if result else '失败'}")
     task.status = 1 if result else 2
     log.info(f"task_id: {task.task_id} 开始发送消息")
     await send_post(task.token_id, task.product_id)
