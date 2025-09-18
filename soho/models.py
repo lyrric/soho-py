@@ -1,3 +1,5 @@
+from typing import List
+
 from django import forms
 
 
@@ -54,3 +56,48 @@ class HttpResult:
     @classmethod
     def error(cls, msg):
         return cls(500, msg, None)
+
+    def __str__(self):
+        return f"HttpResult(code={self.code}, msg={self.msg}, data={self.data})"
+
+
+# 免费活动
+class FreeActivity:
+    """
+    product_id: 产品id
+    product_price：价格
+    shop_type:平台类型 B:天猫，C：淘宝 3：京东 d:抖音
+    title: 标题
+    pic： 图片地址
+    free_card_num： 免单卡数量
+    sale_time: 如17:00
+    more：更多，结构与自身一致
+    """
+
+    def __init__(self, product_id, product_price, shop_type, title, pic, free_card_num, sale_time,
+                 more: List['FreeActivity'] = None):
+        self.product_id = product_id
+        self.product_price = product_price
+        self.shop_type = shop_type
+        self.title = title
+        self.pic = pic
+        self.free_card_num = free_card_num
+        self.sale_time = sale_time
+        self.more = more
+
+    def to_dict(self):
+        return {
+            "product_id": self.product_id,
+            "product_price": self.product_price,
+            "shop_type": self.shop_type,
+            "title": self.title,
+            "pic": self.pic,
+            "free_card_num": self.free_card_num,
+            "sale_time": self.sale_time,
+            "more": [activity.to_dict() for activity in (self.more or [])]
+        }
+
+    def __str__(self):
+        return (f"FreeActivity(product_id={self.product_id}, product_price={self.product_price}, "
+                f"shop_type={self.shop_type}, title={self.title}, pic={self.pic}, "
+                f"free_card_num={self.free_card_num}, sale_time={self.sale_time}, more={self.more})")

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品列表</title>
+    <script src="js/vue.min.js"></script>
+    <script src="https://unpkg.com/element-ui@2.15.14/lib/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 标题样式 */
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: #409EFF;
+        }
+
+        /* 列表项样式 */
+        .product-item {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .product-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 图片样式 */
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
+        }
+
+        .product-item:hover .product-image {
+            transform: scale(1.05);
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        /* 商品信息样式 */
+        .product-info {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .product-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px; /* 增加标题下方间距 */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            color: #f56c6c;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 12px 0; /* 增加价格上下间距 */
+        }
+
+        .product-meta {
+            color: #606266;
+            font-size: 13px;
+            margin: 6px 0; /* 增加元数据行间距 */
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap; /* 允许内容换行 */
+            gap: 10px; /* 元素之间的间距 */
+        }
+
+        .product-meta i {
+            margin-right: 5px;
+            color: #409EFF;
+        }
+
+        .meta-group {
+            display: flex;
+            align-items: center;
+        }
+
+        /* 操作按钮样式 */
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 15px;
+        }
+
+        .action-btn {
+            margin-bottom: 10px;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 平台类型标签样式 */
+        .platform-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .tag-tmall {
+            background-color: #ff4400;
+        }
+
+        .tag-taobao {
+            background-color: #ff7400;
+        }
+
+        .tag-jd {
+            background-color: #e1251b;
+        }
+
+        .tag-douyin {
+            background-color: #00c250;
+        }
+
+        /* 免单卡样式 */
+        .free-card {
+            display: inline-block;
+            background-color: #f0f9eb;
+            color: #52c41a;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .free-card i {
+            margin-right: 3px;
+        }
+
+        /* 加载动画 */
+        .loading-container {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+            color: #909399;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #c0c4cc;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .product-item {
+                flex-direction: column;
+            }
+
+            .image-container {
+                height: 200px;
+                width: 100%;
+            }
+
+            .product-actions {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding: 10px 15px;
+                border-top: 1px solid #f5f5f5;
+            }
+
+            .action-btn {
+                margin-bottom: 0;
+                width: 48%;
+            }
+
+            .product-info {
+                padding: 15px;
+            }
+
+            .product-meta {
+                gap: 8px;
+            }
+        }
+
+        /* 倒计时样式 */
+        .countdown {
+            display: inline-block;
+            background-color: #fffbe6;
+            color: #faad14;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .countdown i {
+            margin-right: 3px;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #ffffff;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 0 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .nav-links li {
+            margin: 0;
+        }
+
+        .nav-links a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #606266;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-links a:hover {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+        }
+
+        .nav-links a.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="container">
+        <!-- 导航栏 -->
+        <div class="navbar">
+            <ul class="nav-links">
+                <li><a href="soho.html"><i class="fa fa-clock-o" aria-hidden="true"></i> SOHO 搜货</a>
+                </li>
+                <li><a href="list.html" class="active"><i class="fa fa-list" aria-hidden="true"></i> 商品列表</a></li>
+            </ul>
+        </div>
+        <h1 class="page-title">特惠商品列表</h1>
+
+        <!-- 商品列表 -->
+        <el-row v-if="!loading && products.length > 0">
+            <el-col :span="24" class="product-item" v-for="(product, index) in products" :key="index">
+                <el-row :gutter="10">
+                    <!-- 商品图片 -->
+                    <el-col :span="4" :xs="24" class="image-container">
+                        <img :src="product.pic" :alt="product.title" class="product-image">
+                    </el-col>
+
+                    <!-- 商品信息 -->
+                    <el-col :span="14" :xs="24" class="product-info">
+                        <div class="product-title">
+                            {{ product.title }}
+                        </div>
+
+                        <div class="product-meta">
+                            <div class="meta-group">
+                                <i class="fas fa-store"></i>
+                                <span :class="getPlatformClass(product.shop_type)">{{ getPlatformName(product.shop_type)
+                                    }}</span>
+                            </div>
+
+                            <div class="meta-group">
+                                    <span class="countdown">
+                                        <i class="far fa-clock"></i>
+                                        <span>开售: {{ product.sale_time }}</span>
+                                    </span>
+                            </div>
+
+                            <div class="meta-group" v-if="product.free_card_num > 0">
+                                    <span class="free-card">
+                                        <i class="fas fa-ticket-alt"></i>
+                                        <span>免单卡: {{ product.free_card_num }}</span>
+                                    </span>
+                            </div>
+                        </div>
+
+                        <div class="product-price">
+                            ¥{{ product.product_price.toFixed(2) }}
+                        </div>
+                    </el-col>
+
+                    <!-- 操作按钮 -->
+                    <el-col :span="6" :xs="24" class="product-actions">
+                        <el-button
+                                class="action-btn"
+                                type="text"
+                                @click="showMore(product)"
+                                :disabled="!product.more || product.more.length === 0"
+                                :style="{color: product.more && product.more.length > 0 ? '#409EFF' : '#c0c4cc'}"
+                        >
+                            <i class="fas fa-ellipsis-h"></i> 查看更多
+                        </el-button>
+
+                        <el-button
+                                class="action-btn"
+                                type="primary"
+                                @click="reserveProduct(product.product_id, product.sale_time)"
+                                :loading="reservingId === product.product_id"
+                        >
+                            <i class="fas fa-shopping-cart"></i> 抢购
+                        </el-button>
+                    </el-col>
+                </el-row>
+            </el-col>
+        </el-row>
+
+        <!-- 加载状态 -->
+        <div class="loading-container" v-if="loading">
+            <el-loading-spinner></el-loading-spinner>
+            <p style="margin-top: 15px;">加载中...</p>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" v-if="!loading && products.length === 0">
+            <i class="fas fa-box-open"></i>
+            <p>暂无商品数据</p>
+        </div>
+    </div>
+
+    <!-- 更多商品弹窗 -->
+    <el-dialog
+            title="更多商品"
+            :visible.sync="moreDialogVisible"
+            :width="isMobile ? '90%' : '800px'"
+            :max-height="isMobile ? '80vh' : '600px'"
+            append-to-body
+    >
+        <div v-if="moreProducts.length > 0">
+            <el-row>
+                <el-col :span="24" class="product-item" v-for="(product, index) in moreProducts" :key="index">
+                    <el-row :gutter="10">
+                        <!-- 商品图片 -->
+                        <el-col :span="6" :xs="24" class="image-container">
+                            <img :src="product.pic" :alt="product.title" class="product-image">
+                        </el-col>
+
+                        <!-- 商品信息 -->
+                        <el-col :span="12" :xs="24" class="product-info">
+                            <div class="product-title">
+                                {{ product.title }}
+                            </div>
+
+                            <div class="product-meta">
+                                <div class="meta-group">
+                                    <i class="fas fa-store"></i>
+                                    <span :class="getPlatformClass(product.shop_type)">{{ getPlatformName(product.shop_type)}}</span>
+                                </div>
+
+                                <div class="meta-group">
+                                        <span class="countdown">
+                                            <i class="far fa-clock"></i>
+                                            <span>开售: {{ product.sale_time }}</span>
+                                        </span>
+                                </div>
+
+                                <div class="meta-group" v-if="product.free_card_num > 0">
+                                        <span class="free-card">
+                                            <i class="fas fa-ticket-alt"></i>
+                                            <span>免单卡: {{ product.free_card_num }}</span>
+                                        </span>
+                                </div>
+                            </div>
+
+                            <div class="product-price">
+                                ¥{{ product.product_price.toFixed(2) }}
+                            </div>
+                        </el-col>
+
+                        <!-- 操作按钮 -->
+                        <el-col :span="6" :xs="24" class="product-actions">
+                            <el-button
+                                    class="action-btn"
+                                    type="primary"
+                                    @click="reserveProduct(product.product_id, product.sale_time)"
+                                    :loading="reservingId === product.product_id"
+                            >
+                                <i class="fas fa-shopping-cart"></i> 抢购
+                            </el-button>
+                        </el-col>
+                    </el-row>
+                </el-col>
+            </el-row>
+        </div>
+
+        <div class="empty-state" v-if="moreProducts.length === 0">
+            <i class="fas fa-box-open"></i>
+            <p>暂无更多商品</p>
+        </div>
+    </el-dialog>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                products: [],
+                loading: true,
+                moreDialogVisible: false,
+                moreProducts: [],
+                reservingId: null,
+                isMobile: false
+            };
+        },
+        mounted() {
+            // 检测设备类型
+            this.checkDeviceType();
+            window.addEventListener('resize', this.checkDeviceType);
+
+            // 获取商品列表
+            this.fetchProducts();
+        },
+        methods: {
+            // 检测设备类型
+            checkDeviceType() {
+                this.isMobile = window.innerWidth <= 768;
+            },
+            // 获取表格数据
+            async fetchProducts() {
+                this.loading = true;
+                try {
+                    const response = await fetch('/soho/activity/get_all', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    const result = await response.json();
+                    this.loading = false;
+                    if (result.code === 200) {
+                        this.products = result.data
+                    } else {
+                        this.$message.error('获取数据失败: ' + result.msg);
+                    }
+                } catch (error) {
+                    console.error('获取数据失败:', error);
+                    this.$message.error('获取数据失败，请检查网络连接');
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+
+            // 显示更多商品
+            showMore(product) {
+                if (product.more && product.more.length > 0) {
+                    this.moreProducts = product.more;
+                    this.moreDialogVisible = true;
+                }
+            },
+
+            // 抢购商品
+            async reserveProduct(product_id, sale_time) {
+                reservingId = product_id;
+                try {
+                    const response = await fetch('/soho/activity/create_reserve', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            product_id: product_id,
+                            sale_time: sale_time
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.code === 200) {
+                        this.$message({
+                            message: 'Token配置成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message.error('操作失败: ' + result.msg);
+                    }
+                } catch (error) {
+                    console.error('操作失败:', error);
+                    this.$message.error('操作失败，请检查网络连接');
+                } finally {
+                    reservingId == null
+                }
+            },
+
+            // 获取平台名称
+            getPlatformName(type) {
+                const platformMap = {
+                    'B': '天猫',
+                    'C': '淘宝',
+                    '3': '京东',
+                    'd': '抖音'
+                };
+                return platformMap[type] || '未知平台';
+            },
+
+            // 获取平台样式类
+            getPlatformClass(type) {
+                const classMap = {
+                    'B': 'platform-tag tag-tmall',
+                    'C': 'platform-tag tag-taobao',
+                    '3': 'platform-tag tag-jd',
+                    'd': 'platform-tag tag-douyin'
+                };
+                return classMap[type] || 'platform-tag';
+            }
+        },
+        beforeDestroy() {
+            window.removeEventListener('resize', this.checkDeviceType);
+        }
+    });
+</script>
+</body>
+</html>
