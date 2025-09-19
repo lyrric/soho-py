@@ -87,12 +87,15 @@ async def get_free_activity_list(request):
 
     hour = datetime.datetime.now().hour
     result: List[FreeActivity] = []
-    for hour in range(hour + 1, 24):
-        datas = await soho_http.get_list(token_id, False, f"{hour}:00")
-        while len(datas) != 0:
-            result.extend(datas)
-            datas = await soho_http.get_list(token_id, True, f"{hour}:00")
-
+    try:
+        for hour in range(hour + 1, 24):
+            datas = await soho_http.get_list(token_id, False, f"{hour}:00")
+            while len(datas) != 0:
+                result.extend(datas)
+                datas = await soho_http.get_list(token_id, True, f"{hour}:00")
+    except Exception as e:
+        return JsonResponse(HttpResult.error(str(e)).to_dict())
+   
     # 根据title和product_price进行分组并处理more属性
     grouped_activities = {}
     for activity in result:
