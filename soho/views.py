@@ -2,7 +2,7 @@ import datetime
 import json
 from typing import Optional, List
 
-# Create your views here.
+from django.core.cache import cache
 from django.http import JsonResponse
 
 from soho.models import HttpResult, FreeActivity
@@ -74,11 +74,20 @@ def get_tasks(request):
 
 # 获取今天所有活动
 async def get_free_activity_list(request):
+    # 生成缓存键
+    cache_key = f"free_activity_list_{token_id}"
+
+    # 尝试从缓存中获取结果
+    cached_result = cache.get(cache_key)
+    if cached_result is not None:
+        return JsonResponse(cached_result, safe=False)
+
     if token_id is None:
         return JsonResponse(HttpResult.error("请先设置token_id").to_dict())
-    current_time = datetime.datetime.now()
+
+    hour = datetime.datetime.now().hour
     result: List[FreeActivity] = []
-    for hour in range(current_time.hour + 1, 24):
+    for hour in range(hour + 1, 24):
         datas = await soho_http.get_list(token_id, False, f"{hour}:00")
         while len(datas) != 0:
             result.extend(datas)
@@ -112,7 +121,10 @@ async def get_free_activity_list(request):
             # 没有重复项，直接添加
             final_result.append(activity)
     activity_dict = [activity.to_dict() for activity in final_result]
-    return JsonResponse(HttpResult.ok(activity_dict).to_dict(), safe=False)
+    response_data = HttpResult.ok(activity_dict).to_dict()
+    # 将结果缓存30分钟（1800秒）
+    cache.set(cache_key, response_data, 1800)
+    return JsonResponse(response_data, safe=False)
 
 
 # 自定义JSON编码器，处理自定义对象

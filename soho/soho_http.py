@@ -74,10 +74,10 @@ async def get_list(token_id, drop_down, remain_node):
                     return _parse_list(result['DataList'], remain_node)
                 else:
                     log.warn(f"获取失败 {err_msg}")
-                    return False
+                    raise Exception(f"获取失败 {err_msg}")
             else:
                 log.warn(f"获取失败 {response.reason}")
-                return False
+                raise Exception(f"获取失败 {response.reason}")
 
 
 def _parse_list(data_list, remain_node) -> List[FreeActivity]:
