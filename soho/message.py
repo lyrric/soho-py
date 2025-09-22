@@ -13,6 +13,7 @@ if not os.environ.get('SPT'):
     log.warn("未配置SPT，不发送消息")
 else:
     spt = os.environ.get('SPT')
+    log.info(f"获取到SPT {spt}")
 
 
 async def send_message(content, summary):
