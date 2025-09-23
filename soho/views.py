@@ -15,17 +15,6 @@ new_task_id = 1
 token_id = None
 
 
-def create_task(request):
-    if request.method == 'POST':
-        task = Task.from_dict(json.loads(request.body))
-        global new_task_id
-        task.task_id = new_task_id
-        new_task_id += 1
-        my_task.tasks.append(task)
-        my_task.start_task(task)
-    return JsonResponse(HttpResult.ok().to_dict())
-
-
 def update_task(request, task_id):
     if request.method != 'POST':
         return JsonResponse(HttpResult.error("Method not allowed").to_dict())
@@ -95,7 +84,7 @@ async def get_free_activity_list(request):
                 datas = await soho_http.get_list(token_id, True, f"{hour}:00")
     except Exception as e:
         return JsonResponse(HttpResult.error(str(e)).to_dict())
-   
+
     # 根据title和product_price进行分组并处理more属性
     grouped_activities = {}
     for activity in result:
@@ -146,7 +135,8 @@ def create_reserve(request):
     if request.method == 'POST':
         json_task = json.loads(request.body)
         global new_task_id
-        task = Task(new_task_id, token_id, json_task['product_id'], json_task['sale_time'].replace(':00', ''))
+        task = Task(new_task_id, token_id, json_task['product_id'], json_task['product_name'],
+                    json_task['free_card_num'], json_task['sale_time'].replace(':00', ''))
         new_task_id += 1
         my_task.tasks.append(task)
         my_task.start_task(task)

@@ -372,7 +372,7 @@
                         <el-button
                                 class="action-btn"
                                 type="primary"
-                                @click="reserveProduct(product.product_id, product.sale_time)"
+                                @click="reserveProduct(product)"
                                 :loading="reservingId === product.product_id"
                         >
                             <i class="fas fa-shopping-cart"></i> 抢购
@@ -449,7 +449,7 @@
                             <el-button
                                     class="action-btn"
                                     type="primary"
-                                    @click="reserveProduct(product.product_id, product.sale_time)"
+                                    @click="reserveProduct(product)"
                                     :loading="reservingId === product.product_id"
                             >
                                 <i class="fas fa-shopping-cart"></i> 抢购
@@ -528,8 +528,8 @@
             },
 
             // 抢购商品
-            async reserveProduct(product_id, sale_time) {
-                reservingId = product_id;
+            async reserveProduct(product) {
+                reservingId = product.product_id;
                 try {
                     const response = await fetch('/soho/activity/create_reserve', {
                         method: 'POST',
@@ -537,8 +537,10 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            product_id: product_id,
-                            sale_time: sale_time
+                            product_id: product.product_id,
+                            sale_time: product.sale_time,
+                            product_name: product.title,
+                            free_card_num: product.free_card_num,
                         })
                     });
                     const result = await response.json();
