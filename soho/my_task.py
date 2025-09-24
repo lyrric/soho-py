@@ -8,16 +8,19 @@ from typing import List
 from soho.models import Task
 from soho.soho_http import send_post
 from soho.message import send_message
+from .my_service import SingleThreadCoroutineRunner
 
 log = logging_config.get_logger(__name__)
 
 tasks: List[Task] = []
 
+# 额外的线程
+__thread = SingleThreadCoroutineRunner()
+
 
 async def _do_task(task: Task):
     log.info(f"准备执行任务, task_id:{task.task_id}")
     start_time = _get_start_time(task)
-    # start_time = datetime.datetime.now()
     now = datetime.datetime.now()
     if now < start_time:
         sleep_time = start_time - now
@@ -25,7 +28,6 @@ async def _do_task(task: Task):
         await asyncio.sleep(sleep_time.seconds)
     log.info(f"开始执行任务：{task}")
     end_time = _get_end_time(task)
-    # end_time = start_time + datetime.timedelta(minutes=5)
 
     while datetime.datetime.now() < end_time:
         result = await send_post(task.token_id, task.product_id)
@@ -47,15 +49,7 @@ def _get_start_time(task: Task):
 
 
 def start_task(task: Task):
-    # 异步执行任务，不等待结果
-    def run_async_task():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(_start_task(task))
-        loop.close()
-
-    thread = Thread(target=run_async_task)
-    thread.start()
+    __thread.submit_coroutine(_start_task(task))
 
 
 async def _start_task(task: Task):
@@ -64,4 +58,4 @@ async def _start_task(task: Task):
     task.status = 1 if result else 2
     log.info(f" {task.product_name} 开始发送消息")
     await send_post(task.token_id, task.product_id)
-    await send_message(f' {task.product_name} 抢购成功', f' {task.task_id} 抢购成功')
+    await send_message(f' {task.product_name} 抢购成功', f'{task.product_name} 抢购成功')

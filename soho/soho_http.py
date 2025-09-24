@@ -8,6 +8,7 @@ BASE_URL = "https://sapph5api.leqilucky.com/Sale/Task/SoHo"
 
 from . import logging_config
 from .models import FreeActivity
+from .models import UserInfo
 
 log = logging_config.get_logger(__name__)
 
@@ -78,6 +79,35 @@ async def get_list(token_id, drop_down, remain_node):
             else:
                 log.warn(f"获取失败 {response.reason}")
                 raise Exception(f"获取失败 {response.reason}")
+
+
+async def get_user_info(token_id):
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://sapph5api.leqilucky.com/Member/SApp/SaleMiniAppMyInfoGet",
+                               params={
+                                   'uname': 'h5',
+                                   'ukey': ukey,
+                                   'tokenid': token_id,
+                               },
+                               headers=_get_headers(),
+                               timeout=aiohttp.ClientTimeout(total=30),
+                               ssl=False) as response:
+            result = await _check_result(response)
+            info_dict = result['SaleMiniAppMyInfo']
+            return UserInfo.from_dict(info_dict)
+
+
+async def _check_result(response):
+    if response.ok:
+        result = await response.json()
+        err_msg = result.get('ErrMsg')
+        if err_msg:
+            log.warn(f"获取失败 {err_msg}")
+            raise Exception(f"获取失败 {err_msg}")
+        return result
+    else:
+        log.warn(f"获取失败 {response.reason}")
+        raise Exception(f"获取失败 {response.reason}")
 
 
 def _parse_list(data_list, remain_node) -> List[FreeActivity]:

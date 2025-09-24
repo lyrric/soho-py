@@ -1,5 +1,8 @@
+import asyncio
+import concurrent.futures
 import datetime
 import json
+import threading
 from typing import Optional, List
 
 from django.core.cache import cache
@@ -9,10 +12,18 @@ from soho.models import HttpResult, FreeActivity
 from soho.models import Task
 from soho import my_task
 from soho import soho_http
+from soho import logging_config
+from soho import message
+from soho.my_service import SingleThreadCoroutineRunner
 
 new_task_id = 1
 
 token_id = None
+
+log = logging_config.get_logger(__name__)
+
+# 额外的线程
+thread = SingleThreadCoroutineRunner()
 
 
 def update_task(request, task_id):
@@ -83,6 +94,7 @@ async def get_free_activity_list(request):
                 result.extend(datas)
                 datas = await soho_http.get_list(token_id, True, f"{hour}:00")
     except Exception as e:
+        log.error("get_free_activity_list error", exc_info=True)
         return JsonResponse(HttpResult.error(str(e)).to_dict())
 
     # 根据title和product_price进行分组并处理more属性
@@ -147,4 +159,28 @@ def set_token_id(request):
     global token_id
     body = json.loads(request.body)
     token_id = body['token_id']
+    thread.submit_coroutine(_check_token_id_scheduled, token_id)
     return JsonResponse(HttpResult.ok().to_dict())
+
+
+async def _check_token_id_scheduled(_token_id):
+    if _token_id is None:
+        return
+    global token_id
+    while True:
+        # 检查当前时间是否在0点到早上8点之间
+        current_hour = datetime.datetime.now().hour
+        if 0 <= current_hour < 8:
+            log.info(f"当前时间为{current_hour}点，处于0点到8点之间，停止检查token_id:{_token_id}")
+            return
+
+        try:
+            if _token_id != token_id:
+                log.info(f"token_id已改变, 停止检查:{_token_id}")
+                return
+            await soho_http.get_user_info(_token_id)
+            await asyncio.sleep(60 * 5)
+        except Exception as e:
+            log.error(f"检查token_id失败:{e}", exc_info=True)
+            await message.send_message("检查token_id失败", f'token_id :{_token_id} error: {e}')
+            return

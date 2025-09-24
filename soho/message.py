@@ -16,7 +16,7 @@ else:
     log.info(f"获取到SPT {spt}")
 
 
-async def send_message(content, summary):
+async def send_message(summary, content):
     if spt is None:
         log.warn("未配置SPT，不发送消息")
         return
