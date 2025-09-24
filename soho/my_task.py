@@ -49,7 +49,7 @@ def _get_start_time(task: Task):
 
 
 def start_task(task: Task):
-    __thread.submit_coroutine(_start_task(task))
+    __thread.submit_coroutine(_start_task, task)
 
 
 async def _start_task(task: Task):
