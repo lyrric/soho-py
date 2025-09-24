@@ -60,8 +60,8 @@ def start_task(task: Task):
 
 async def _start_task(task: Task):
     result = await _do_task(task)
-    log.info(f"task_id: {task.task_id} 任务执行{'成功' if result else '失败'}")
+    log.info(f"task_id:  {task.product_name} 任务执行{'成功' if result else '失败'}")
     task.status = 1 if result else 2
-    log.info(f"task_id: {task.task_id} 开始发送消息")
+    log.info(f" {task.product_name} 开始发送消息")
     await send_post(task.token_id, task.product_id)
-    await send_message(f' {task.task_id} 抢购成功', f' {task.task_id} 抢购成功')
+    await send_message(f' {task.product_name} 抢购成功', f' {task.task_id} 抢购成功')
