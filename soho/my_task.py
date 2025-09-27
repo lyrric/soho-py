@@ -57,5 +57,4 @@ async def _start_task(task: Task):
     log.info(f"task_id:  {task.product_name} 任务执行{'成功' if result else '失败'}")
     task.status = 1 if result else 2
     log.info(f" {task.product_name} 开始发送消息")
-    await send_post(task.token_id, task.product_id)
     await send_message(f' {task.product_name} 抢购成功', f'{task.product_name} 抢购成功')

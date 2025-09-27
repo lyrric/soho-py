@@ -377,6 +377,13 @@
                         >
                             <i class="fas fa-shopping-cart"></i> 抢购
                         </el-button>
+                        <el-button
+                                class="action-btn"
+                                type="primary"
+                                @click="ignoreProduct(product)"
+                        >
+                            <i class="fas fa-shopping-cart"></i> 忽略类似
+                        </el-button>
                     </el-col>
                 </el-row>
             </el-col>
@@ -557,6 +564,37 @@
                     this.$message.error('操作失败，请检查网络连接');
                 } finally {
                     reservingId == null
+                }
+            },
+
+            // 忽略商品
+            async ignoreProduct(product) {
+                try {
+                    const response = await fetch('/soho/activity/ignore_similar_product', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            title: product.title,
+                            shop_type: product.shop_type,
+                            product_price: product.product_price,
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.code === 200) {
+                        this.$message({
+                            message: '操作成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message.error('操作失败: ' + result.msg);
+                    }
+                } catch (error) {
+                    console.error('操作失败:', error);
+                    this.$message.error('操作失败，请检查网络连接');
+                } finally {
+
                 }
             },
 

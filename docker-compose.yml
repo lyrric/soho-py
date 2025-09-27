@@ -6,4 +6,6 @@ services:
     ports:
       - "8012:8000"
     environment:
+      - REDIS_HOST
+      - REDIS_PWD
       - SPT
