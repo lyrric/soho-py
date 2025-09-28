@@ -81,7 +81,7 @@ async def get_free_activity_list(request):
     # 尝试从缓存中获取结果
     result = cache.get(cache_key)
     if result is None:
-        token_id = cache.get("TOKEN_ID")
+        token_id = _get_token_id()
         if token_id is None:
             return JsonResponse(HttpResult.error("请先设置token_id").to_dict())
 
@@ -147,11 +147,22 @@ def _contain(con, activity: FreeActivity) -> bool:
     return True if result is not None else False
 
 
+def _get_token_id():
+    conn = get_redis_connection()
+    token_id = conn.get("TOKEN_ID")
+    return token_id.decode(encoding="utf-8")
+
+
+def _set_token_id(token_id: str):
+    conn = get_redis_connection()
+    conn.set("TOKEN_ID", str(token_id))
+
+
 def create_reserve(request):
     if request.method == 'POST':
         json_task = json.loads(request.body)
         global new_task_id
-        token_id = cache.get("TOKEN_ID")
+        token_id = _get_token_id()
         task = Task(new_task_id, token_id, json_task['product_id'], json_task['product_name'],
                     json_task['free_card_num'], json_task['sale_time'].replace(':00', ''))
         new_task_id += 1
@@ -163,7 +174,7 @@ def create_reserve(request):
 def set_token_id(request):
     body = json.loads(request.body)
     token_id = body['token_id']
-    cache.set("TOKEN_ID", token_id)
+    _set_token_id(token_id)
     thread.submit_coroutine(_check_token_id_scheduled, token_id)
     return JsonResponse(HttpResult.ok().to_dict())
 
@@ -182,7 +193,7 @@ def ignore_similar_product(request):
 async def _check_token_id_scheduled(_token_id):
     if _token_id is None:
         return
-    token_id = cache.get("TOKEN_ID")
+
     while True:
         # 检查当前时间是否在0点到早上8点之间
         current_hour = datetime.datetime.now().hour
@@ -191,6 +202,7 @@ async def _check_token_id_scheduled(_token_id):
             return
 
         try:
+            token_id = _get_token_id()
             if _token_id != token_id:
                 log.info(f"token_id已改变, 停止检查:{_token_id}")
                 return
